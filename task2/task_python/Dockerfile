@@ -2,7 +2,9 @@ FROM python
 
 COPY . .
 
-EXPOSE 1234
+EXPOSE 8000
+
+RUN pip install --no-cache-dir -r requirments.txt
 
 CMD ["source", "venv/bin/activate"]
 
