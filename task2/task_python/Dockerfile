@@ -1,6 +1,12 @@
 FROM python
 
-COPY . .
+ENV HOME=/home/app/web
+
+RUN addgroup --system app && adduser --system app --ingroup app
+
+WORKDIR $HOME
+
+COPY . $HOME
 
 EXPOSE 8000
 

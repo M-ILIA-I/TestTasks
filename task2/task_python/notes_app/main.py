@@ -1,5 +1,5 @@
 import uvicorn
-from db.db import url
+from database.db import url
 
 
 if __name__ == "__main__":
