@@ -12,10 +12,13 @@ url = URL.create(
     username=os.getenv("DB_USERNAME"),
     host=os.getenv("DB_HOST"),
     database=os.getenv("DB_NAME"),
-    password=os.getenv("DB_PASSWORD")
+    password=os.getenv("DB_PASSWORD"),
+    port=os.getenv("DB_PORT")
 )
 
-engine = create_engine(url)
+connection_string = "postgresql://ilya:12345@task_python_db_1:5432/test_db"
+
+engine = create_engine(connection_string)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
