@@ -1,6 +1,7 @@
 from datetime import datetime
 from .models import User, Note
 from .db import SessionLocal
+from sqlalchemy import asc
 
 
 def get_db():
@@ -63,6 +64,10 @@ def get_notes(db):
     return db.query(Note).all()
 
 
+def get_user_notes(db, user_id: int):
+    return db.query(Note).filter(Note.user_id == user_id).all()
+
+
 def update_note(db, note_id, note_data):
     note = get_note(db, note_id)
     if note:
@@ -80,3 +85,11 @@ def delete_note(db, note_id):
         db.delete(note)
         db.commit()
         return note
+    
+
+def get_notes_sorted_by_title(db):
+    return db.query(Note).order_by(asc(Note.title)).all()
+
+
+def get_notes_sorted_by_created_at(db):
+    return db.query(Note).order_by(asc(Note.created_at)).all()

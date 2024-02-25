@@ -1,11 +1,15 @@
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, Response
 from database.services import get_user, get_users, create_user, delete_user, get_db, update_user
 from database.models import User
 from sqlalchemy.orm import Session
 from ..schemas import UserBase
 from fastapi.routing import APIRouter
+from passlib.context import CryptContext
+from authentication.auth_bearer import create_access_token
+from datetime import timedelta
 
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 users_router = APIRouter()
 
 
@@ -45,4 +49,13 @@ class UsersRouter:
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
         return {"user": user}
-
+    
+    # Register User Endpoint
+    @users_router.post("/register")
+    def register(responce: Response, user: UserBase, db: Session = Depends(get_db)):
+        hashed_password = pwd_context.hash(user.password)
+        user.password = hashed_password
+        create_user(db, user.dict())
+        access_token = create_access_token(data=user.dict(), expires_delta = timedelta(minutes=30))
+        responce.set_cookie(key="jwt", value=access_token)
+        return {"user": user}
