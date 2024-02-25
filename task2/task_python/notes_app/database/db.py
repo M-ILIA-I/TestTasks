@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.engine import URL
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
 from dotenv import load_dotenv
 import os
 
@@ -16,9 +18,11 @@ url = URL.create(
     port=os.getenv("DB_PORT")
 )
 
-connection_string = "postgresql://ilya:12345@task_python_db_1:5432/test_db"
+engine = create_engine(url)
 
-engine = create_engine(connection_string)
+if not database_exists(engine.url):    
+    create_database(engine.url)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
