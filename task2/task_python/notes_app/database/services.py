@@ -1,95 +1,92 @@
 from datetime import datetime
 from .models import User, Note
-from .db import SessionLocal
+from .db import async_session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import asc
+from api.schemas import UserUpdate, UserBase, NoteBase, NoteUpdate
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db() -> AsyncSession:
+    async with async_session() as session:
+        yield session
 
 
-def create_user(db, user_data):
-    print(user_data)
+async def create_user(db: AsyncSession, user_data: UserBase):
     user = User(**user_data)
-    print(user)
     db.add(user)
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
 
-def get_user(db, user_id):
-    return db.query(User).filter(User.id == user_id).first()
+async def get_user(db: AsyncSession, user_id: int):
+    return await db.query(User).filter(User.id == user_id).first()
 
 
-def get_users(db):
-    return db.query(User).all()
+async def get_users(db: AsyncSession):
+    return await db.query(User).all()
 
 
-def update_user(db, user_id, user_data):
-    user = get_user(db, user_id)
+async def update_user(db: AsyncSession, user_id: int, user_data: UserUpdate):
+    user = await get_user(db, user_id)
     if user:
         for key, value in user_data.items():
             setattr(user, key, value)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         return user
 
 
-def delete_user(db, user_id):
-    user = get_user(db, user_id)
+async def delete_user(db: AsyncSession, user_id: int):
+    user = await get_user(db, user_id)
     if user:
         db.delete(user)
-        db.commit()
+        await db.commit()
         return user
 
 
-def create_note(db, note_data):
+async def create_note(db: AsyncSession, note_data: NoteBase):
     note = Note(**note_data)
     db.add(note)
-    db.commit()
-    db.refresh(note)
+    await db.commit()
+    await db.refresh(note)
     return note
 
 
-def get_note(db, note_id):
-    return db.query(Note).filter(Note.id == note_id).first()
+async def get_note(db: AsyncSession, note_id: int):
+    return await db.query(Note).filter(Note.id == note_id).first()
 
 
-def get_notes(db):
-    return db.query(Note).all()
+async def get_notes(db: AsyncSession):
+    return await db.query(Note).all()
 
 
-def get_user_notes(db, user_id: int):
-    return db.query(Note).filter(Note.user_id == user_id).all()
+async def get_user_notes(db: AsyncSession, user_id: int):
+    return await db.query(Note).filter(Note.user_id == user_id).all()
 
 
-def update_note(db, note_id, note_data):
-    note = get_note(db, note_id)
+async def update_note(db: AsyncSession, note_id: int, note_data: NoteBase):
+    note = await get_note(db, note_id)
     if note:
         for key, value in note_data.items():
             setattr(note, key, value)
         note.updated_at = datetime.utcnow()
-        db.commit()
-        db.refresh(note)
+        await db.commit()
+        await db.refresh(note)
         return note
 
 
-def delete_note(db, note_id):
-    note = get_note(db, note_id)
+async def delete_note(db: AsyncSession, note_id: int):
+    note = await get_note(db, note_id)
     if note:
         db.delete(note)
-        db.commit()
+        await db.commit()
         return note
     
 
-def get_notes_sorted_by_title(db):
-    return db.query(Note).order_by(asc(Note.title)).all()
+async def get_notes_sorted_by_title(db: AsyncSession):
+    return await db.query(Note).order_by(asc(Note.title)).all()
 
 
-def get_notes_sorted_by_created_at(db):
-    return db.query(Note).order_by(asc(Note.created_at)).all()
+async def get_notes_sorted_by_created_at(db: AsyncSession):
+    return await db.query(Note).order_by(asc(Note.created_at)).all()

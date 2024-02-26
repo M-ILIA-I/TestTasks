@@ -1,12 +1,14 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 import jwt
+from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 from database.services import get_user
 from typing import Optional
 from dotenv import load_dotenv
 import os
+from api.schemas import UserBase
 
 
 load_dotenv()
@@ -16,15 +18,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
-def create_access_token(data: dict, expires_delta: timedelta):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, os.getenv("SECRETE_KEY"), algorithm="HS256")
-    return encoded_jwt
-
-
-def get_current_user(db, token: str = Depends(oauth2_scheme)):
+def get_current_user(db: AsyncSession, token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, os.getenv("SECRETE_KEY"), algorithms="HS256")
         user_id = payload.get("id")
@@ -39,17 +33,7 @@ def get_current_user(db, token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Invalid authentication token")
 
 
-
-
-
-
-
-
-
-
-
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: UserBase, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
