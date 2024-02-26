@@ -14,12 +14,21 @@ public:
         return parent;
     }
 
+    void addChild(std::shared_ptr<Widget> child) {
+        children.push_back(child);
+    }
+
+    std::vector<std::shared_ptr<Widget>> getChildren() const {
+        return children;
+    }
+
     virtual std::string getType() const {
         return "Widget";
     }
 
 private:
     std::shared_ptr<Widget> parent;
+    std::vector<std::shared_ptr<Widget>> children;
 };
 
 class TabWidget : public Widget {
@@ -44,9 +53,17 @@ int main() {
     widget2->setParent(widget1);
     widget3->setParent(widget1);
 
+    widget1->addChild(widget2);
+    widget1->addChild(widget3);
+
     std::cout << "Widget 1 Type: " << widget1->getType() << std::endl;
     std::cout << "Widget 2 Type: " << widget2->getType() << std::endl;
     std::cout << "Widget 3 Type: " << widget3->getType() << std::endl;
+
+    std::cout << "Widget 1 Children: " << std::endl;
+    for (const auto& child : widget1->getChildren()) {
+        std::cout << " - " << child->getType() << std::endl;
+    }
 
     return 0;
 }
